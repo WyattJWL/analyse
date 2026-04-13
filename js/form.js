@@ -337,27 +337,63 @@ function collectData() {
   };
 }
 
+function utf8ToBase64(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+function bytesToBase64Url(bytes) {
+  let bin = '';
+  bytes.forEach(b => { bin += String.fromCharCode(b); });
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+async function compressJsonToToken(json) {
+  if (typeof CompressionStream === 'undefined') return null;
+  const stream = new CompressionStream('deflate-raw');
+  const writer = stream.writable.getWriter();
+  await writer.write(new TextEncoder().encode(json));
+  await writer.close();
+  const buffer = await new Response(stream.readable).arrayBuffer();
+  return bytesToBase64Url(new Uint8Array(buffer));
+}
+
 // ——— Generate report ———
-function generateReport() {
+async function generateReport() {
   const data = collectData();
   if (!data.client.name) { alert('⚠ Veuillez au moins renseigner le nom du client.'); return; }
 
   const json = JSON.stringify(data);
-  const encoded = btoa(unescape(encodeURIComponent(json)));
+  const encoded = utf8ToBase64(json);
   const base = window.location.href.replace(/index\.html.*$/, '').replace(/\?.*$/, '');
-  const viewUrl = base + 'view.html#' + encoded;
+  const b64Url = base + 'view.html#b64:' + encoded;
+
+  let shortUrl = b64Url;
+  let ratioLabel = 'Compression non disponible sur ce navigateur';
+  try {
+    const token = await compressJsonToToken(json);
+    if (token) {
+      shortUrl = base + 'view.html#z:' + token;
+      const ratio = Math.round((1 - (shortUrl.length / b64Url.length)) * 100);
+      ratioLabel = `Lien court local (${Math.max(ratio, 0)}% plus court)`;
+    }
+  } catch (_) {
+    ratioLabel = 'Compression indisponible, lien base64 conservé';
+  }
 
   document.getElementById('result-client-name').textContent = '📊 Analyse — ' + data.client.name;
-  document.getElementById('result-link').textContent = viewUrl;
-  document.getElementById('result-open').href = viewUrl;
+  document.getElementById('result-link-short').textContent = shortUrl;
+  document.getElementById('result-link').textContent = b64Url;
+  document.getElementById('result-open-short').href = shortUrl;
+  document.getElementById('result-open').href = b64Url;
+  document.getElementById('result-short-label').textContent = ratioLabel;
   document.getElementById('result-area').style.display = 'block';
   document.getElementById('result-area').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-function copyLink() {
-  const txt = document.getElementById('result-link').textContent;
+function copyLink(targetId, btn) {
+  const txt = document.getElementById(targetId)?.textContent || '';
+  if (!txt) return;
   navigator.clipboard.writeText(txt).then(() => {
-    const btn = document.querySelector('.copy-btn');
     const orig = btn.textContent;
     btn.textContent = '✓ COPIÉ';
     setTimeout(() => btn.textContent = orig, 2000);

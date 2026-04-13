@@ -352,14 +352,24 @@
         <div id="result-area">
           <div class="result-label">✓ Analyse générée avec succès</div>
           <div class="result-title" id="result-client-name"></div>
+
+          <div class="result-subtitle" id="result-short-label">Lien court local</div>
+          <div class="result-link-box">
+            <span class="result-link-text" id="result-link-short"></span>
+            <button class="copy-btn" onclick="copyLink('result-link-short', this)">COPIER</button>
+          </div>
+          <a id="result-open-short" class="open-btn" target="_blank">OUVRIR LE LIEN COURT →</a>
+
+          <div class="result-subtitle">Lien base64 (compatibilité maximale)</div>
           <div class="result-link-box">
             <span class="result-link-text" id="result-link"></span>
-            <button class="copy-btn" onclick="copyLink()">COPIER</button>
+            <button class="copy-btn" onclick="copyLink('result-link', this)">COPIER</button>
           </div>
-          <a id="result-open" class="open-btn" target="_blank">OUVRIR L'ANALYSE →</a>
+          <a id="result-open" class="open-btn secondary" target="_blank">OUVRIR LE LIEN BASE64 →</a>
+
           <div class="result-note">
-            🔒 Ce lien contient toutes les données de l'analyse encodées et compressées. Aucun serveur de stockage nécessaire.<br>
-            ⚠ Les liens très longs peuvent parfois être tronqués par certains clients email. Dans ce cas, utilisez bit.ly ou tinyurl.
+            🔒 Les deux liens fonctionnent sans serveur: le lien court utilise une compression locale, le lien base64 garde la compatibilité.<br>
+            ⚠ Si un navigateur ancien ne gère pas la compression, le lien court retombera automatiquement sur le lien base64.
           </div>
         </div>
       </div>

@@ -21,7 +21,9 @@ jwl-marketing/
 
 - **Login sécurisé** avec session `sessionStorage`
 - **First-step onboarding** à la première connexion : demande prénom, nom, photo de profil (auto-rempli dans chaque analyse)
-- **Génération d'analyse** : données encodées en base64 dans l'URL (`view.html#...`)
+- **Génération d'analyse** : 2 liens générés automatiquement sans serveur :
+  - lien court compressé (`view.html#z:...`)
+  - lien base64 de compatibilité (`view.html#b64:...`)
 - **Gestion des admins** (Wyatt uniquement) :
   - Créer / modifier / supprimer un compte admin
   - Voir la dernière connexion de chaque admin
