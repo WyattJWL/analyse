@@ -2,6 +2,36 @@
 
 let counters = { strengths: 0, weaknesses: 0, comp: 0, tbl: 0, kw: 0, perf: 0, bugs: 0, opp: 0, actions: 0, tl: 0 };
 
+const JWL_REPORTS_KEY = 'jwl_reports_v1';
+const JWL_REPORT_SEQ_KEY = 'jwl_reports_seq_v1';
+
+function getStoredReports() {
+  try {
+    return JSON.parse(localStorage.getItem(JWL_REPORTS_KEY) || '{}');
+  } catch (_) {
+    return {};
+  }
+}
+
+function saveStoredReports(map) {
+  localStorage.setItem(JWL_REPORTS_KEY, JSON.stringify(map));
+}
+
+function createReportId() {
+  const current = parseInt(localStorage.getItem(JWL_REPORT_SEQ_KEY) || '1000', 10);
+  const next = Number.isFinite(current) ? current + 1 : 1001;
+  localStorage.setItem(JWL_REPORT_SEQ_KEY, String(next));
+  return String(next);
+}
+
+function persistReportData(data) {
+  const id = createReportId();
+  const reports = getStoredReports();
+  reports[id] = { ...data, _meta: { createdAt: new Date().toISOString(), id } };
+  saveStoredReports(reports);
+  return id;
+}
+
 // ——— Block toggle ———
 function toggleBlock(id) {
   const block = document.getElementById(id);
@@ -365,6 +395,8 @@ async function generateReport() {
   const json = JSON.stringify(data);
   const encoded = utf8ToBase64(json);
   const base = window.location.href.replace(/index\.html.*$/, '').replace(/\?.*$/, '');
+  const dossierId = persistReportData(data);
+  const pageUrl = base + 'view.html?page=' + dossierId;
   const b64Url = base + 'view.html#b64:' + encoded;
 
   let shortUrl = b64Url;
@@ -381,10 +413,13 @@ async function generateReport() {
   }
 
   document.getElementById('result-client-name').textContent = '📊 Analyse — ' + data.client.name;
+  document.getElementById('result-link-page').textContent = pageUrl;
   document.getElementById('result-link-short').textContent = shortUrl;
   document.getElementById('result-link').textContent = b64Url;
+  document.getElementById('result-open-page').href = pageUrl;
   document.getElementById('result-open-short').href = shortUrl;
   document.getElementById('result-open').href = b64Url;
+  document.getElementById('result-page-label').textContent = `Dossier #${dossierId} (lien ultra-court)`;
   document.getElementById('result-short-label').textContent = ratioLabel;
   document.getElementById('result-area').style.display = 'block';
   document.getElementById('result-area').scrollIntoView({ behavior: 'smooth', block: 'center' });
