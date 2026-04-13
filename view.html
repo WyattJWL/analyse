@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analyse SEO — JWL Marketing</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d;
+    --paper: #f5f2eb;
+    --cream: #ede9df;
+    --white: #faf9f6;
+    --mid: #888880;
+    --light: #ccc9c0;
+    --accent: #b5935a;
+    --accent2: #7a5612;
+    --red: #9b2020;
+    --green: #1a5c35;
+    --orange: #8c4a00;
+    --border: rgba(13,13,13,0.1);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#dcd7cc;
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--ink);
+    min-height:100vh;
+    padding:40px 16px 60px;
+    background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.025'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* ERROR */
+  #error-screen {
+    display:none; max-width:500px; margin:80px auto; background:var(--white);
+    border:2px solid var(--red); padding:32px; text-align:center;
+  }
+  #error-screen h2 { font-family:'Playfair Display',serif; margin-bottom:10px; color:var(--red); }
+  #error-screen p { font-size:12px; color:var(--mid); line-height:1.7; }
+
+  /* ENVELOPE */
+  .envelope-wrapper {
+    max-width:880px; margin:0 auto;
+    animation:dropIn 0.7s cubic-bezier(0.16,1,0.3,1) both;
+  }
+  @keyframes dropIn { from{opacity:0;transform:translateY(-30px) scale(0.97)} to{opacity:1;transform:none} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+  @keyframes growBar { from{width:0 !important} }
+
+  .chrome {
+    background:#111; padding:11px 18px;
+    display:flex; align-items:center; gap:8px; border-radius:6px 6px 0 0;
+  }
+  .dot { width:13px; height:13px; border-radius:50%; flex-shrink:0; }
+  .dot.r{background:#ff5f57} .dot.y{background:#febc2e} .dot.g{background:#28c840}
+  .chrome-label { margin-left:auto; font-size:10px; color:rgba(255,255,255,0.28); letter-spacing:0.08em; }
+
+  .email-meta {
+    background:var(--white); border-bottom:2px solid var(--ink);
+    padding:22px 32px 20px; animation:fadeUp 0.5s 0.1s both;
+  }
+  .stamp-row { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+  .stamp-subject-label { font-size:9px; font-weight:600; letter-spacing:0.2em; text-transform:uppercase; color:var(--mid); margin-bottom:4px; }
+  .stamp-subject-text { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; line-height:1.2; max-width:540px; }
+  .badge-stack { display:flex; flex-direction:column; gap:6px; align-items:flex-end; margin-top:6px; }
+  .stamp-badge { background:var(--ink); color:var(--paper); font-size:9px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; padding:5px 12px; border-radius:2px; white-space:nowrap; display:inline-block; }
+  .stamp-badge.gold{background:var(--accent2)} .stamp-badge.green{background:var(--green)}
+  .meta-fields { margin-top:16px; display:flex; flex-direction:column; gap:5px; }
+  .meta-field { display:flex; align-items:center; gap:10px; font-size:11px; color:var(--mid); }
+  .meta-key { width:38px; font-size:9px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--ink); flex-shrink:0; }
+
+  .sender-bar {
+    background:var(--ink); padding:18px 32px;
+    display:flex; align-items:center; gap:16px; animation:fadeUp 0.5s 0.15s both;
+  }
+  .avatar-ring {
+    width:56px; height:56px; border-radius:50%; border:2px solid var(--accent);
+    overflow:hidden; flex-shrink:0; cursor:pointer;
+    transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.35s;
+  }
+  .avatar-ring:hover { transform:scale(1.12) rotate(3deg); box-shadow:0 0 0 4px rgba(181,147,90,0.3); }
+  .avatar-ring img { width:100%; height:100%; object-fit:cover; display:block; }
+  .avatar-fallback { width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--accent2); font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:0.1em; color:#fff; }
+  .sender-info { flex:1; }
+  .sender-name { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:0.1em; color:var(--paper); line-height:1; }
+  .sender-role { font-size:10px; color:rgba(255,255,255,0.4); margin-top:4px; }
+  .sender-date { font-size:10px; color:rgba(255,255,255,0.25); text-align:right; line-height:1.6; }
+
+  .email-body { background:var(--white); padding:36px 32px; border-bottom:2px solid var(--ink); }
+  .greeting { font-family:'Playfair Display',serif; font-size:18px; font-style:italic; margin-bottom:14px; animation:fadeUp 0.5s 0.2s both; }
+  .intro { font-size:12.5px; line-height:1.85; color:#3a3a3a; border-left:3px solid var(--accent); padding-left:16px; margin-bottom:32px; animation:fadeUp 0.5s 0.25s both; }
+
+  .section { margin-bottom:36px; animation:fadeUp 0.5s both; }
+  .section-pill {
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--ink); color:var(--paper);
+    font-size:9px; font-weight:600; letter-spacing:0.2em; text-transform:uppercase;
+    padding:5px 14px; margin-bottom:18px; position:relative;
+  }
+  .section-pill::after { content:''; position:absolute; right:-5px; bottom:-5px; width:100%; height:100%; background:rgba(0,0,0,0.08); z-index:-1; }
+  .section-pill.gold{background:var(--accent2)} .section-pill.red{background:var(--red)} .section-pill.green{background:var(--green)}
+
+  /* AUDIT */
+  .audit-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .audit-box { border:1.5px solid var(--ink); padding:20px; background:var(--white); transition:transform 0.2s,box-shadow 0.2s,background 0.18s; cursor:default; }
+  .audit-box:hover { transform:translate(-3px,-3px); box-shadow:5px 5px 0 var(--ink); background:var(--cream); }
+  .audit-box-title { font-family:'Bebas Neue',sans-serif; font-size:15px; letter-spacing:0.08em; margin-bottom:4px; }
+  .audit-box-url { font-size:9px; color:var(--mid); margin-bottom:12px; }
+  .audit-item { display:flex; gap:8px; margin-bottom:8px; font-size:11px; line-height:1.55; }
+  .audit-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:3px; }
+  .dot-ok{background:var(--green)} .dot-warn{background:var(--orange)} .dot-bad{background:var(--red)}
+  .audit-score { display:inline-flex; align-items:center; justify-content:center; width:48px; height:48px; border-radius:50%; font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:0.05em; float:right; margin:0 0 8px 12px; border:2px solid currentColor; }
+  .score-bad{color:var(--red)} .score-mid{color:var(--orange)} .score-good{color:var(--green)} .score-gold{color:var(--accent2)}
+
+  /* COMPETITORS */
+  .comp-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .comp-card { border:1.5px solid var(--ink); padding:16px; background:var(--white); position:relative; cursor:default; transition:transform 0.22s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.22s,background 0.18s; }
+  .comp-card:hover { transform:translate(-4px,-4px); box-shadow:6px 6px 0 var(--ink); background:var(--cream); z-index:2; }
+  .comp-name { font-family:'Bebas Neue',sans-serif; font-size:17px; letter-spacing:0.08em; margin-bottom:2px; }
+  .comp-url { font-size:9.5px; color:var(--mid); letter-spacing:0.04em; margin-bottom:10px; }
+  .comp-desc { font-size:11.5px; line-height:1.7; color:#444; }
+  .comp-note { font-size:11px; line-height:1.6; color:var(--accent2); font-style:italic; margin-top:8px; }
+  .threat { position:absolute; top:12px; right:12px; font-size:8px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; padding:3px 8px; border-radius:2px; }
+  .threat-h{background:#1a1a1a;color:#fff} .threat-m{background:#888;color:#fff} .threat-l{background:#ddd;color:#333} .threat-p{background:var(--accent2);color:#fff}
+
+  /* TABLE */
+  .cmp-table { width:100%; border-collapse:collapse; font-size:11.5px; font-family:'IBM Plex Mono',monospace; }
+  .cmp-table th { background:var(--ink); color:var(--paper); padding:9px 12px; text-align:left; font-size:9px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; }
+  .cmp-table td { padding:10px 12px; border-bottom:1px solid var(--border); line-height:1.5; transition:background 0.15s; vertical-align:middle; }
+  .cmp-table tr:hover td { background:var(--cream); }
+  .cmp-table .lbl { font-weight:500; color:var(--ink); width:28%; }
+  .ok{color:var(--green);font-weight:600} .warn{color:var(--orange);font-weight:600} .bad{color:var(--red);font-weight:600}
+
+  /* KEYWORDS */
+  .kw-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+  .kw-row { display:flex; align-items:center; justify-content:space-between; padding:9px 13px; border:1.5px solid var(--ink); background:var(--white); font-size:11px; cursor:default; transition:background 0.18s,transform 0.2s; }
+  .kw-row:hover { background:var(--cream); transform:translateX(3px); }
+  .kw-label { font-weight:500; color:var(--ink); }
+  .kw-vol { font-size:9px; color:var(--mid); letter-spacing:0.08em; }
+  .kw-diff { font-size:9px; font-weight:600; padding:2px 7px; border-radius:2px; }
+  .diff-low{background:#d4edda;color:#1a5c35} .diff-mid{background:#fff3cd;color:#8c4a00} .diff-high{background:#f8d7da;color:#9b2020}
+
+  /* PERF */
+  .perf-row { margin-bottom:12px; }
+  .perf-label { font-size:10.5px; font-weight:600; margin-bottom:4px; display:flex; justify-content:space-between; }
+  .perf-track { height:8px; background:var(--cream); border:1px solid var(--light); border-radius:2px; overflow:hidden; }
+  .perf-fill { height:100%; border-radius:2px; animation:growBar 1.2s cubic-bezier(0.22,1,0.36,1) both; }
+  .fill-low{background:var(--red)} .fill-mid{background:var(--orange)} .fill-good{background:var(--green)} .fill-gold{background:var(--accent2)}
+
+  /* BUGS */
+  .bug-list { display:flex; flex-direction:column; gap:10px; }
+  .bug-item { display:flex; gap:14px; align-items:flex-start; padding:13px 16px; border:1.5px solid var(--ink); background:var(--white); transition:transform 0.2s,box-shadow 0.2s,background 0.18s; cursor:default; }
+  .bug-item:hover { transform:translateX(5px); box-shadow:-5px 0 0 var(--ink); background:var(--cream); }
+  .bug-num { font-family:'Playfair Display',serif; font-size:28px; line-height:1; opacity:0.12; flex-shrink:0; width:30px; }
+  .bug-content strong { font-size:12px; font-weight:600; display:block; margin-bottom:4px; }
+  .bug-content p { font-size:11.5px; line-height:1.65; color:#555; }
+
+  /* OPPORTUNITIES */
+  .opp-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .opp-card { border:1.5px solid var(--ink); padding:18px 14px 14px; text-align:center; background:var(--white); transition:background 0.2s,transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.2s,color 0.2s; cursor:default; }
+  .opp-card:hover { background:var(--ink); color:var(--paper); transform:translateY(-6px); box-shadow:0 10px 0 rgba(0,0,0,0.18); }
+  .opp-card:hover .opp-title,.opp-card:hover .opp-sub { color:inherit; }
+  .opp-icon { font-size:26px; margin-bottom:10px; display:block; transition:transform 0.3s; }
+  .opp-card:hover .opp-icon { transform:scale(1.2) rotate(-8deg); }
+  .opp-title { font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:0.08em; margin-bottom:6px; color:var(--ink); }
+  .opp-sub { font-size:10.5px; line-height:1.55; color:var(--mid); }
+  .opp-card:hover .opp-title { color:var(--paper); }
+  .opp-card:hover .opp-sub { color:rgba(255,255,255,0.5); }
+
+  /* ACTIONS */
+  .action-list { display:flex; flex-direction:column; gap:0; }
+  .action-item { display:flex; align-items:stretch; border:1.5px solid var(--ink); border-bottom:none; overflow:hidden; transition:background 0.18s; cursor:default; }
+  .action-item:last-child { border-bottom:1.5px solid var(--ink); }
+  .action-item:hover { background:var(--cream); }
+  .action-item:hover .action-num { background:var(--accent2); color:#fff; }
+  .action-num { background:var(--ink); color:var(--paper); font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:0.05em; padding:12px 18px; display:flex; align-items:center; justify-content:center; min-width:58px; transition:background 0.2s; }
+  .action-body { padding:12px 16px; flex:1; }
+  .action-title { font-size:12px; font-weight:600; margin-bottom:4px; }
+  .action-desc { font-size:11px; line-height:1.65; color:#555; }
+  .action-impact { font-size:10.5px; line-height:1.6; color:var(--accent2); margin-top:4px; font-style:italic; }
+  .action-urgency { display:flex; align-items:center; padding:0 16px; flex-shrink:0; }
+  .urg-pill { font-size:8.5px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; padding:3px 9px; border-radius:2px; white-space:nowrap; }
+  .urg-now{background:#9b2020;color:#fff} .urg-week{background:var(--accent2);color:#fff} .urg-month{background:#555;color:#fff}
+
+  /* TIMELINE */
+  .timeline { display:flex; flex-direction:column; gap:0; position:relative; padding-left:36px; }
+  .timeline::before { content:''; position:absolute; left:12px; top:8px; bottom:8px; width:2px; background:var(--light); }
+  .tl-item { position:relative; padding:12px 0 12px 20px; cursor:default; }
+  .tl-item::before { content:''; position:absolute; left:-29px; top:17px; width:12px; height:12px; border-radius:50%; background:var(--paper); border:2px solid var(--ink); transition:background 0.2s,transform 0.25s; z-index:1; }
+  .tl-item:hover::before { background:var(--ink); transform:scale(1.3); }
+  .tl-phase { font-size:9px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--mid); margin-bottom:3px; }
+  .tl-title { font-size:12.5px; font-weight:600; margin-bottom:4px; }
+  .tl-desc { font-size:11px; line-height:1.65; color:#555; }
+
+  /* VERDICT */
+  .verdict { background:var(--ink); color:var(--paper); padding:28px 32px; margin-top:8px; position:relative; overflow:hidden; cursor:default; transition:transform 0.2s; }
+  .verdict:hover { transform:scale(1.005); }
+  .verdict::before { content:'❝'; position:absolute; right:24px; top:-8px; font-family:'Playfair Display',serif; font-size:130px; color:rgba(255,255,255,0.04); line-height:1; pointer-events:none; }
+  .verdict-lead { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:0.1em; color:var(--accent); margin-bottom:12px; line-height:1; }
+  .verdict p { font-size:13px; line-height:1.8; color:rgba(255,255,255,0.82); }
+  .verdict strong { color:var(--paper); }
+
+  /* BUSINESS CARD */
+  .card-section { background:var(--cream); border-top:2px solid var(--ink); padding:28px 32px; }
+  .card-label { font-size:9px; font-weight:600; letter-spacing:0.2em; text-transform:uppercase; color:var(--mid); margin-bottom:14px; }
+  .biz-card { background:var(--ink); border-radius:4px; overflow:hidden; display:grid; grid-template-columns:220px 1fr; max-width:640px; box-shadow:8px 8px 0 rgba(0,0,0,0.22); transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.35s; cursor:pointer; }
+  .biz-card:hover { transform:translate(-4px,-4px) rotate(-0.5deg); box-shadow:14px 14px 0 rgba(0,0,0,0.22); }
+  .biz-card-left { background:var(--accent2); padding:28px 22px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+  .biz-card-left::before { content:''; position:absolute; top:-40px; right:-40px; width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,0.06); }
+  .biz-card-left::after { content:''; position:absolute; bottom:-30px; left:-30px; width:90px; height:90px; border-radius:50%; background:rgba(255,255,255,0.04); }
+  .biz-avatar { width:72px; height:72px; border-radius:50%; border:2px solid rgba(255,255,255,0.5); object-fit:cover; margin-bottom:12px; position:relative; z-index:1; transition:transform 0.3s,border-color 0.3s; }
+  .biz-card:hover .biz-avatar { transform:scale(1.08); border-color:rgba(255,255,255,0.9); }
+  .biz-avatar-fallback { width:72px; height:72px; border-radius:50%; border:2px solid rgba(255,255,255,0.5); background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:24px; color:#fff; margin-bottom:12px; position:relative; z-index:1; }
+  .biz-name { font-family:'Bebas Neue',sans-serif; font-size:15px; letter-spacing:0.1em; color:#fff; text-align:center; line-height:1.2; position:relative; z-index:1; }
+  .biz-card-right { padding:24px 26px; display:flex; flex-direction:column; justify-content:center; gap:10px; }
+  .biz-role { font-family:'Playfair Display',serif; font-size:14px; font-style:italic; color:rgba(255,255,255,0.9); margin-bottom:4px; }
+  .biz-detail { display:flex; align-items:center; gap:8px; font-size:11px; color:rgba(255,255,255,0.55); transition:color 0.2s; }
+  .biz-detail:hover { color:rgba(255,255,255,0.9); }
+  .biz-detail .icon { font-size:14px; opacity:0.7; }
+  .biz-divider { height:1px; background:rgba(255,255,255,0.1); margin:4px 0; }
+  .biz-tag { display:inline-block; background:rgba(181,147,90,0.15); border:1px solid rgba(181,147,90,0.35); color:var(--accent); font-size:9px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; padding:3px 8px; border-radius:2px; }
+  .biz-tags { display:flex; gap:6px; flex-wrap:wrap; }
+
+  .sign-off { background:var(--paper); padding:22px 32px; display:flex; align-items:center; justify-content:space-between; border-top:2px solid var(--ink); }
+  .sign-text { font-size:12px; line-height:1.8; color:#555; }
+  .sign-text strong { display:block; font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:0.1em; color:var(--ink); margin-bottom:2px; }
+  .sign-avatar { width:46px; height:46px; border-radius:50%; border:2px solid var(--ink); object-fit:cover; cursor:pointer; transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1),filter 0.25s; }
+  .sign-avatar:hover { transform:rotate(8deg) scale(1.12); filter:contrast(1.1) saturate(1.1); }
+
+  .email-footer { background:#111; padding:12px 32px; display:flex; justify-content:space-between; align-items:center; border-radius:0 0 6px 6px; }
+  .footer-ref { font-size:9.5px; color:rgba(255,255,255,0.2); letter-spacing:0.05em; }
+  .footer-brand { font-family:'Playfair Display',serif; font-size:13px; color:rgba(255,255,255,0.1); font-style:italic; }
+
+  .prose { font-size:12.5px; line-height:1.85; color:#333; }
+  .prose p { margin-bottom:14px; }
+  .prose strong { color:var(--ink); font-weight:600; }
+  .prose em { color:var(--accent2); font-style:italic; }
+
+  @media(max-width:620px) {
+    .comp-grid,.audit-grid,.opp-grid,.kw-grid { grid-template-columns:1fr; }
+    .biz-card { grid-template-columns:1fr; }
+    .email-body,.email-meta,.sender-bar,.sign-off,.card-section { padding-left:18px; padding-right:18px; }
+  }
+</style>
+</head>
+<body>
+<div id="error-screen">
+  <h2>⚠ Analyse introuvable</h2>
+  <p>Ce lien ne contient pas de données d'analyse valides. Veuillez vérifier l'URL ou contacter votre consultant JWL Marketing.</p>
+</div>
+<div id="report" style="display:none"></div>
+
+<script>
+// =================== DECODE ===================
+function decodeData() {
+  try {
+    const hash = window.location.hash.slice(1);
+    if (!hash) return null;
+    const json = decodeURIComponent(escape(atob(hash)));
+    return JSON.parse(json);
+  } catch(e) {
+    return null;
+  }
+}
+
+// =================== HELPERS ===================
+const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const safe = s => s || '';
+function threatLabel(t) {
+  const map = {h:'Concurrent majeur',m:'Concurrent établi',l:'Concurrent local',p:'Hors segment'};
+  return map[t] || t;
+}
+function scoreClass(n) { return n < 40 ? 'score-bad' : n < 65 ? 'score-mid' : 'score-good'; }
+function urgClass(u) { return u === 'now' ? 'urg-now' : u === 'week' ? 'urg-week' : 'urg-month'; }
+function urgLabel(u) { return u === 'now' ? 'Maintenant' : u === 'week' ? 'Cette semaine' : 'Ce mois-ci'; }
+function diffClass(d) { return d === 'high' ? 'diff-high' : d === 'mid' ? 'diff-mid' : 'diff-low'; }
+function diffLabel(d) { return d === 'high' ? 'Compétitif' : d === 'mid' ? 'Moyen' : 'Accessible'; }
+
+function avatarImg(src, cls, alt) {
+  if (!src) return `<div class="${cls.replace('biz-avatar','biz-avatar-fallback')}">${(alt||'?')[0]}</div>`;
+  return `<img class="${cls}" src="${esc(src)}" alt="${esc(alt||'')}" onerror="this.style.display='none'">`;
+}
+
+// =================== RENDER ===================
+function render(d) {
+  const s = d.sender || {};
+  const c = d.client || {};
+  const v = d.verdict || {};
+  const siteLabel = (c.site||'').replace(/^https?:\/\//,'');
+
+  // Compute date+time for sender bar
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) + ' PM';
+
+  // Photo
+  const senderPhoto = s.photo || '';
+
+  // Compose subject
+  const subjectParts = [siteLabel, 'Audit SEO', 'Analyse concurrentielle', 'Plan d\'action 90 jours'].filter(Boolean);
+  const subject = `Analyse SEO & concurrentielle complète — ${siteLabel || c.name}`;
+
+  let html = `
+  <div class="envelope-wrapper">
+    <div class="chrome">
+      <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+      <span class="chrome-label">Messagerie — Rapport Client ${s.company||'JWL Marketing'} · ${c.name||''} · ${c.date||''}</span>
+    </div>
+
+    <div class="email-meta">
+      <div class="stamp-row">
+        <div>
+          <div class="stamp-subject-label">Objet du rapport</div>
+          <div class="stamp-subject-text">${esc(subject)}</div>
+        </div>
+        <div class="badge-stack">
+          ${c.confidentiality ? `<span class="stamp-badge">${esc(c.confidentiality)}</span>` : ''}
+          ${c.priority ? `<span class="stamp-badge gold">${esc(c.priority)}</span>` : ''}
+          ${c.badge ? `<span class="stamp-badge green">${esc(c.badge)}</span>` : ''}
+        </div>
+      </div>
+      <div class="meta-fields">
+        <div class="meta-field"><span class="meta-key">De</span> ${esc(s.name||'')} &nbsp;—&nbsp; ${esc(s.role||'')}</div>
+        <div class="meta-field"><span class="meta-key">À</span> ${esc(c.name||'')} &nbsp;—&nbsp; ${esc(c.job||'')}</div>
+        <div class="meta-field"><span class="meta-key">Réf.</span> ${esc(c.ref||'')} &nbsp;·&nbsp; ${esc(siteLabel)}</div>
+      </div>
+    </div>
+
+    <div class="sender-bar">
+      <div class="avatar-ring">
+        ${senderPhoto
+          ? `<img src="${esc(senderPhoto)}" alt="${esc(s.name||'')}" onerror="this.parentElement.innerHTML='<div class=\\'avatar-fallback\\'>${(s.name||'?')[0]}</div>'">`
+          : `<div class="avatar-fallback">${(s.name||'?')[0]}</div>`}
+      </div>
+      <div class="sender-info">
+        <div class="sender-name">${esc(s.name||'')}</div>
+        <div class="sender-role">${esc(s.role||'')} · ${esc(s.city||'')}</div>
+      </div>
+      <div class="sender-date">${esc(c.date||'')} <br>${timeStr}</div>
+    </div>
+
+    <div class="email-body">
+      <div class="greeting">${esc(c.name ? c.name.split(' ')[0] : 'Chère cliente')},</div>
+      <div class="intro">${esc(c.intro||'')} <strong>${esc(c.diffpoint||'')}</strong></div>
+  `;
+
+  // ——— AUDIT ———
+  html += renderAudit(d);
+
+  // ——— CONCURRENTS ———
+  html += renderCompetitors(d);
+
+  // ——— TABLE ———
+  html += renderTable(d);
+
+  // ——— KEYWORDS ———
+  if (d.keywords?.length) html += renderKeywords(d);
+
+  // ——— PERF ———
+  if (d.perfs?.length) html += renderPerf(d);
+
+  // ——— BUGS ———
+  if (d.bugs?.length) html += renderBugs(d);
+
+  // ——— OPPORTUNITIES ———
+  if (d.opps?.length) html += renderOpps(d);
+
+  // ——— ACTIONS ———
+  if (d.actions?.length) html += renderActions(d);
+
+  // ——— TIMELINE ———
+  if (d.timeline?.length) html += renderTimeline(d);
+
+  // ——— VERDICT ———
+  if (v.text) html += renderVerdict(d);
+
+  html += `</div>`; // /email-body
+
+  // ——— BUSINESS CARD ———
+  html += renderBizCard(d);
+
+  // ——— SIGN OFF ———
+  const initials = (s.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2);
+  html += `
+    <div class="sign-off">
+      <div class="sign-text">
+        Bien cordialement,<br>
+        <strong>${esc(s.name||'')}</strong>
+        ${esc(s.role||'')} · ${esc(s.company||'')}<br>
+        <span style="font-size:10px;color:#aaa;">Réf. ${esc(c.ref||'')} · Document confidentiel remis à ${esc(c.name||'')}</span>
+      </div>
+      ${senderPhoto
+        ? `<img class="sign-avatar" src="${esc(senderPhoto)}" alt="${esc(s.name||'')}">` 
+        : `<div style="width:46px;height:46px;border-radius:50%;border:2px solid var(--ink);background:var(--accent2);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:16px;color:#fff">${esc(initials)}</div>`}
+    </div>
+    <div class="email-footer">
+      <span class="footer-ref">${c.confidentiality ? c.confidentiality.toUpperCase() + ' · ' : ''}${esc(s.company||'')} pour ${esc(c.name||'')} · Réf. ${esc(c.ref||'')}</span>
+      <span class="footer-brand">${esc(s.company||'JWL Marketing')}</span>
+    </div>
+  </div>`;
+
+  return html;
+}
+
+function renderAudit(d) {
+  const strengths = d.strengths || [];
+  const weaknesses = d.weaknesses || [];
+  const score = d.audit_score || 0;
+  const scls = score < 40 ? 'score-bad' : score < 65 ? 'score-mid' : 'score-good';
+  const c = d.client || {};
+
+  const dotMap = { ok:'dot-ok', warn:'dot-warn', bad:'dot-bad' };
+
+  let sHtml = strengths.map(p => `
+    <div class="audit-item">
+      <div class="audit-dot ${dotMap[p.type]||'dot-ok'}"></div>
+      <span><strong>${esc(p.title)}</strong>${p.desc ? ' — ' + esc(p.desc) : ''}</span>
+    </div>`).join('');
+
+  let wHtml = weaknesses.map(p => `
+    <div class="audit-item">
+      <div class="audit-dot ${dotMap[p.type]||'dot-bad'}"></div>
+      <span><strong>${esc(p.title)}</strong>${p.desc ? ' — ' + esc(p.desc) : ''}</span>
+    </div>`).join('');
+
+  const siteLabel = (c.site||'').replace(/^https?:\/\//,'');
+
+  return `
+  <div class="section">
+    <div class="section-pill">01 — Audit de votre site actuel</div>
+    <div class="audit-grid">
+      <div class="audit-box">
+        <span class="audit-score ${scls}">${score}</span>
+        <div class="audit-box-title">Points forts ✓</div>
+        <div class="audit-box-url">${esc(siteLabel)}</div>
+        ${sHtml}
+      </div>
+      <div class="audit-box">
+        <div class="audit-box-title">Points à corriger ⚠</div>
+        <div class="audit-box-url">Problèmes identifiés</div>
+        ${wHtml}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCompetitors(d) {
+  const comps = d.competitors || [];
+  const threatClassMap = { h:'threat-h', m:'threat-m', l:'threat-l', p:'threat-p' };
+  const compCards = comps.map(comp => `
+    <div class="comp-card">
+      <span class="threat ${threatClassMap[comp.threat]||'threat-m'}">${threatLabel(comp.threat)}</span>
+      <div class="comp-name">${esc(comp.name||'')}</div>
+      <div class="comp-url">${esc(comp.url||'')}</div>
+      <div class="comp-desc">${esc(comp.desc||'')}</div>
+      ${comp.note ? `<div class="comp-note">${esc(comp.note)}</div>` : ''}
+    </div>`).join('');
+
+  return `
+  <div class="section">
+    <div class="section-pill">02 — Cartographie concurrentielle</div>
+    ${d.comp_intro ? `<div class="prose" style="margin-bottom:16px"><p>${esc(d.comp_intro)}</p></div>` : ''}
+    <div class="comp-grid">${compCards}</div>
+  </div>`;
+}
+
+function renderTable(d) {
+  const rows = d.table_rows || [];
+  if (!rows.length) return '';
+  const clsMap = { ok:'ok', warn:'warn', bad:'bad' };
+  const rowsHtml = rows.map(r => `
+    <tr>
+      <td class="lbl">${esc(r.criterion||'')}</td>
+      <td><span class="${clsMap[r.client_cls]||''}">${esc(r.client_val||'')}</span></td>
+      <td><span class="${clsMap[r.comp1_cls]||''}">${esc(r.comp1_val||'')}</span></td>
+      <td><span class="${clsMap[r.comp2_cls]||''}">${esc(r.comp2_val||'')}</span></td>
+    </tr>`).join('');
+
+  const c = d.client || {};
+  return `
+  <div class="section">
+    <div class="section-pill">03 — Comparaison positionnement SEO</div>
+    <table class="cmp-table">
+      <thead>
+        <tr>
+          <th>Critère SEO</th>
+          <th>${esc(c.name||'Votre site')} (actuel)</th>
+          <th>${esc(d.tbl_comp1||'Concurrent A')}</th>
+          <th>${esc(d.tbl_comp2||'Concurrent B')}</th>
+        </tr>
+      </thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+  </div>`;
+}
+
+function renderKeywords(d) {
+  const kws = d.keywords || [];
+  const kwHtml = kws.map(k => `
+    <div class="kw-row">
+      <span class="kw-label">${esc(k.kw||'')}</span>
+      <div>
+        <span class="kw-vol">${esc(k.vol||'')}</span>&nbsp;
+        <span class="kw-diff ${diffClass(k.diff)}">${diffLabel(k.diff)}</span>
+      </div>
+    </div>`).join('');
+
+  return `
+  <div class="section">
+    <div class="section-pill gold">04 — Mots-clés stratégiques à cibler</div>
+    ${d.kw_intro ? `<div class="prose" style="margin-bottom:16px"><p>${esc(d.kw_intro)}</p></div>` : ''}
+    <div class="kw-grid">${kwHtml}</div>
+    ${d.kw_note ? `<div class="prose" style="margin-top:14px"><p>${esc(d.kw_note)}</p></div>` : ''}
+  </div>`;
+}
+
+function renderPerf(d) {
+  const perfs = d.perfs || [];
+  const barsHtml = perfs.map(p => `
+    <div class="perf-row">
+      <div class="perf-label"><span>${esc(p.label||'')}</span><span>${p.score}/100</span></div>
+      <div class="perf-track"><div class="perf-fill ${p.cls||'fill-mid'}" style="width:${Math.min(p.score||0,100)}%"></div></div>
+    </div>`).join('');
+
+  return `
+  <div class="section">
+    <div class="section-pill">05 — Évaluation des performances estimées</div>
+    ${barsHtml}
+    ${d.perf_comment ? `<div class="prose" style="margin-top:14px"><p>${esc(d.perf_comment)}</p></div>` : ''}
+  </div>`;
+}
+
+function renderBugs(d) {
+  const bugs = d.bugs || [];
+  const bugsHtml = bugs.map((b, i) => `
+    <div class="bug-item">
+      <div class="bug-num">${i+1}</div>
+      <div class="bug-content">
+        <strong>${esc(b.title||'')}</strong>
+        <p>${esc(b.desc||'')}</p>
+      </div>
+    </div>`).join('');
+
+  return `
+  <div class="section">
+    <div class="section-pill red">06 — Corrections urgentes à effectuer</div>
+    <div class="bug-list">${bugsHtml}</div>
+  </div>`;
+}
+
+function renderOpps(d) {
+  const opps = d.opps || [];
+  const oppsHtml = opps.map(o => `
+    <div class="opp-card">
+      <span class="opp-icon">${esc(o.icon||'💡')}</span>
+      <div class="opp-title">${esc(o.title||'')}</div>
+      <div class="opp-sub">${esc(o.desc||'')}</div>
+    </div>`).join('');
+
+  return `
+  <div class="section">
+    <div class="section-pill gold">07 — Vos fenêtres d'opportunité</div>
+    <div class="opp-grid">${oppsHtml}</div>
+  </div>`;
+}
+
+function renderActions(d) {
+  const actions = d.actions || [];
+  const actHtml = actions.map((a, i) => `
+    <div class="action-item">
+      <div class="action-num">${i+1}</div>
+      <div class="action-body">
+        <div class="action-title">${esc(a.title||'')}</div>
+        <div class="action-desc">${esc(a.desc||'')}</div>
+        ${a.impact ? `<div class="action-impact">${esc(a.impact)}</div>` : ''}
+      </div>
+      <div class="action-urgency"><span class="urg-pill ${urgClass(a.urgency)}">${urgLabel(a.urgency)}</span></div>
+    </div>`).join('');
+
+  return `
+  <div class="section">
+    <div class="section-pill">08 — Plan d'action SEO priorisé</div>
+    <div class="action-list">${actHtml}</div>
+  </div>`;
+}
+
+function renderTimeline(d) {
+  const tl = d.timeline || [];
+  const tlHtml = tl.map(t => `
+    <div class="tl-item">
+      <div class="tl-phase">${esc(t.phase||'')}</div>
+      <div class="tl-title">${esc(t.title||'')}</div>
+      <div class="tl-desc">${esc(t.desc||'')}</div>
+    </div>`).join('');
+
+  return `
+  <div class="section">
+    <div class="section-pill">09 — Feuille de route</div>
+    <div class="timeline">${tlHtml}</div>
+  </div>`;
+}
+
+function renderVerdict(d) {
+  const v = d.verdict || {};
+  return `
+  <div class="verdict">
+    <div class="verdict-lead">${esc(v.title||'Verdict stratégique')}</div>
+    <p>${v.text||''}</p>
+  </div>`;
+}
+
+function renderBizCard(d) {
+  const s = d.sender || {};
+  const photo = s.photo || '';
+  const initials = (s.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2);
+  const tags = s.tags || [];
+
+  return `
+  <div class="card-section">
+    <div class="card-label">📎 Carte de l'expéditeur — ${esc(s.name||'')} · ${esc(s.company||'')}</div>
+    <div class="biz-card">
+      <div class="biz-card-left">
+        ${photo
+          ? `<img class="biz-avatar" src="${esc(photo)}" alt="${esc(s.name||'')}" onerror="this.outerHTML='<div class=\\'biz-avatar-fallback\\'>${esc(initials)}</div>'">`
+          : `<div class="biz-avatar-fallback">${esc(initials)}</div>`}
+        <div class="biz-name">${esc(s.name||'').replace(' ', '<br>')}</div>
+      </div>
+      <div class="biz-card-right">
+        <div class="biz-role">${esc(s.role||'')}</div>
+        <div class="biz-divider"></div>
+        ${s.company ? `<div class="biz-detail"><span class="icon">🏢</span> ${esc(s.company)} — ${esc(s.city||'')}</div>` : ''}
+        ${s.website ? `<div class="biz-detail"><span class="icon">🌐</span> ${esc(s.website.replace(/^https?:\/\//,''))}</div>` : ''}
+        ${s.phone ? `<div class="biz-detail"><span class="icon">📞</span> ${esc(s.phone)}</div>` : ''}
+        ${s.email ? `<div class="biz-detail"><span class="icon">📧</span> ${esc(s.email)}</div>` : ''}
+        <div class="biz-divider"></div>
+        <div class="biz-tags">${tags.map(t=>`<span class="biz-tag">${esc(t)}</span>`).join('')}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// =================== BOOT ===================
+(function() {
+  const data = decodeData();
+  if (!data) {
+    document.getElementById('error-screen').style.display = 'block';
+    return;
+  }
+  document.title = `Analyse SEO — ${data.client?.name || ''} · ${data.sender?.company || 'JWL Marketing'}`;
+  const report = document.getElementById('report');
+  report.style.display = 'block';
+  report.innerHTML = render(data);
+})();
+</script>
+</body>
+</html>
