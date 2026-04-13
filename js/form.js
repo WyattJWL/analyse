@@ -439,7 +439,12 @@ function copyLink(targetId, btn) {
 function switchTab(tab) {
   document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + tab).style.display = 'block';
-  document.getElementById('tab-btn-' + tab).classList.add('active');
+
+  const panel = document.getElementById('tab-' + tab);
+  if (panel) panel.style.display = 'block';
+
+  const btn = document.getElementById('tab-btn-' + tab) || document.getElementById('tab-' + tab + '-btn');
+  if (btn) btn.classList.add('active');
+
   if (tab === 'admins') renderAdminList();
 }
