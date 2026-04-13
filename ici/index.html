@@ -100,7 +100,7 @@
     <button class="tab-btn active" id="tab-btn-analyse" onclick="switchTab('analyse')">
       ✦ Nouvelle analyse
     </button>
-    <button class="tab-btn" id="tab-btn-admins" id="tab-admins-btn" onclick="switchTab('admins')" style="display:none">
+    <button class="tab-btn" id="tab-admins-btn" onclick="switchTab('admins')" style="display:none">
       ⚙ Gestion des admins
     </button>
   </div>
@@ -352,14 +352,31 @@
         <div id="result-area">
           <div class="result-label">✓ Analyse générée avec succès</div>
           <div class="result-title" id="result-client-name"></div>
+
+          <div class="result-subtitle" id="result-page-label">Lien dossier</div>
+          <div class="result-link-box">
+            <span class="result-link-text" id="result-link-page"></span>
+            <button class="copy-btn" onclick="copyLink('result-link-page', this)">COPIER</button>
+          </div>
+          <a id="result-open-page" class="open-btn" target="_blank">OUVRIR LE DOSSIER →</a>
+
+          <div class="result-subtitle" id="result-short-label">Lien court compressé</div>
+          <div class="result-link-box">
+            <span class="result-link-text" id="result-link-short"></span>
+            <button class="copy-btn" onclick="copyLink('result-link-short', this)">COPIER</button>
+          </div>
+          <a id="result-open-short" class="open-btn secondary" target="_blank">OUVRIR LE LIEN COMPRESSÉ →</a>
+
+          <div class="result-subtitle">Lien base64 (compatibilité maximale)</div>
           <div class="result-link-box">
             <span class="result-link-text" id="result-link"></span>
-            <button class="copy-btn" onclick="copyLink()">COPIER</button>
+            <button class="copy-btn" onclick="copyLink('result-link', this)">COPIER</button>
           </div>
-          <a id="result-open" class="open-btn" target="_blank">OUVRIR L'ANALYSE →</a>
+          <a id="result-open" class="open-btn secondary" target="_blank">OUVRIR LE LIEN BASE64 →</a>
+
           <div class="result-note">
-            🔒 Ce lien contient toutes les données de l'analyse encodées et compressées. Aucun serveur de stockage nécessaire.<br>
-            ⚠ Les liens très longs peuvent parfois être tronqués par certains clients email. Dans ce cas, utilisez bit.ly ou tinyurl.
+            🔒 Le lien dossier (`?page=...`) est ultra-court et charge les données depuis le JSON local du navigateur (sans serveur).<br>
+            📦 Les liens compressé/base64 restent disponibles pour le partage complet autonome (sans dépendre du stockage local).
           </div>
         </div>
       </div>

@@ -264,6 +264,7 @@ input[type=file] { display: none; }
 }
 .result-label { font-size: 9px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green); margin-bottom: 10px; }
 .result-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; margin-bottom: 14px; }
+.result-subtitle { font-size: 9px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink); margin: 14px 0 6px; }
 .result-link-box {
   display: flex; gap: 10px; align-items: center;
   background: var(--cream); border: 1.5px solid var(--ink); padding: 10px 14px;
@@ -276,11 +277,13 @@ input[type=file] { display: none; }
 }
 .copy-btn:hover { background: var(--accent2); }
 .open-btn {
-  display: inline-block; margin-top: 12px; background: var(--green); color: #fff;
+  display: inline-block; margin-top: 10px; background: var(--green); color: #fff;
   padding: 10px 22px; font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.12em;
   text-decoration: none; transition: background 0.2s, transform 0.2s;
 }
 .open-btn:hover { background: #1e7040; transform: translateY(-2px); }
+.open-btn.secondary { background: var(--ink); }
+.open-btn.secondary:hover { background: #333; }
 .result-note { font-size: 10px; color: var(--mid); margin-top: 10px; line-height: 1.6; }
 
 /* ——— SCORE BAR ——— */

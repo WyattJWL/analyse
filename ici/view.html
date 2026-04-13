@@ -252,11 +252,68 @@
 
 <script>
 // =================== DECODE ===================
-function decodeData() {
+function base64ToUtf8(base64) {
+  return decodeURIComponent(escape(atob(base64)));
+}
+
+function base64UrlToBytes(token) {
+  const b64 = token.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = b64 + '='.repeat((4 - (b64.length % 4)) % 4);
+  const bin = atob(padded);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+async function decodeCompressedHash(token) {
+  if (typeof DecompressionStream === 'undefined') return null;
+  const stream = new DecompressionStream('deflate-raw');
+  const writer = stream.writable.getWriter();
+  await writer.write(base64UrlToBytes(token));
+  await writer.close();
+  const text = await new Response(stream.readable).text();
+  return JSON.parse(text);
+}
+
+
+const JWL_REPORTS_KEY = 'jwl_reports_v1';
+
+async function loadByPageId(pageId) {
+  if (!pageId) return null;
+
   try {
+    const local = JSON.parse(localStorage.getItem(JWL_REPORTS_KEY) || '{}');
+    if (local && local[pageId]) return local[pageId];
+  } catch (_) {}
+
+  try {
+    const resp = await fetch('data/reports.json', { cache: 'no-store' });
+    if (!resp.ok) return null;
+    const json = await resp.json();
+    if (json && json[pageId]) return json[pageId];
+  } catch (_) {}
+
+  return null;
+}
+
+async function decodeData() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const pageId = params.get('page');
+    if (pageId) {
+      const byPage = await loadByPageId(pageId);
+      if (byPage) return byPage;
+    }
+
     const hash = window.location.hash.slice(1);
     if (!hash) return null;
-    const json = decodeURIComponent(escape(atob(hash)));
+
+    if (hash.startsWith('z:')) {
+      return await decodeCompressedHash(hash.slice(2));
+    }
+
+    const payload = hash.startsWith('b64:') ? hash.slice(4) : hash;
+    const json = base64ToUtf8(payload);
     return JSON.parse(json);
   } catch(e) {
     return null;
@@ -639,8 +696,8 @@ function renderBizCard(d) {
 }
 
 // =================== BOOT ===================
-(function() {
-  const data = decodeData();
+(async function() {
+  const data = await decodeData();
   if (!data) {
     document.getElementById('error-screen').style.display = 'block';
     return;
